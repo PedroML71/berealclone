@@ -1,24 +1,54 @@
-import { Stack, useRouter } from "expo-router";
+import { AuthProvider, useAuth } from "@/context/AuthContext";
+import { Stack, useRouter, useSegments } from "expo-router";
 import { useEffect } from "react";
+import { ActivityIndicator, View } from "react-native";
 
-export default function RootLayout() {
+function RouteGuard() {
   const router = useRouter();
+  const { user, isLoading } = useAuth();
+  const segments = useSegments();
 
-  // TEMP solution until auth is implemented
-  let isAuth = false;
+  const inAuthGroup = segments[0] === "(auth)";
+  const inTabsGroup = segments[0] === "(tabs)";
 
   useEffect(() => {
-    if (!isAuth) {
-      router.replace("/(auth)/login");
+    if (isLoading) return;
+    if (!user) {
+      if (!inAuthGroup) {
+        console.log("its here");
+        router.replace("/(auth)/login");
+      }
+    } else if (!user.onboarding_complete) {
+      if (segments.join("/") !== "(auth)/onboarding") {
+        router.replace("/(auth)/onboarding");
+      }
     } else {
-      router.replace("/(tabs)");
+      if (!inTabsGroup) {
+        router.replace("/(tabs)");
+      }
     }
-  });
+  }, [user, segments, router, isLoading]);
+
+  if (isLoading) {
+    return (
+      <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+        <ActivityIndicator size={"large"} />
+      </View>
+    );
+  }
 
   return (
     <Stack screenOptions={{ headerShown: false }}>
       <Stack.Screen name="(tabs)" />
       <Stack.Screen name="(auth)" />
     </Stack>
+  );
+}
+
+export default function RootLayout() {
+  return (
+    <AuthProvider>
+      <RouteGuard />
+    </AuthProvider>
   );
 }
