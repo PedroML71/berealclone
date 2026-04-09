@@ -80,10 +80,12 @@ export default function Onboarding() {
   const handleComplete = async () => {
     if (!name || !username) {
       Alert.alert("Error", "Please fill in all fields");
+      return;
     }
 
     if (username.length < 3) {
       Alert.alert("Error", "Username must be at least 3 characters");
+      return;
     }
 
     setIsLoading(true);
@@ -121,15 +123,15 @@ export default function Onboarding() {
             "Failed to upload profile image. Continuing without image.",
           );
         }
-
-        // Update profile
-        await updateUser({
-          name,
-          username,
-          profile_image_url: profileImageUrl,
-          onboarding_complete: true,
-        });
       }
+
+      // Update profile
+      await updateUser({
+        name,
+        username,
+        profile_image_url: profileImageUrl,
+        onboarding_complete: true,
+      });
 
       router.replace("/(tabs)");
     } catch (error) {

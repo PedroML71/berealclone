@@ -27,7 +27,7 @@ function RouteGuard() {
         router.replace("/(tabs)");
       }
     }
-  }, [user, segments, router]);
+  }, [user, segments, router, isLoading]);
 
   if (isLoading) {
     return (

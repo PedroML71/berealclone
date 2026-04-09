@@ -59,6 +59,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         username: data.username,
         email: authUser.data.user.email || "",
         onboarding_complete: data.onboarding_complete,
+        profile_image_url: data.profile_image_url ?? undefined,
       };
     } catch (error) {
       console.error("Error in fetchUserProfile", error);

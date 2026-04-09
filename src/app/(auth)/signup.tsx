@@ -16,6 +16,7 @@ export default function Signup() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const MIN_PASSWORD_LENGTH = 8; // keep in sync with your Supabase Auth policy
 
   const router = useRouter();
   const { signUp } = useAuth();
@@ -23,10 +24,14 @@ export default function Signup() {
   const handleSignUp = async () => {
     if (!email || !password) {
       Alert.alert("Error", "Please fill in all fields");
+      return;
     }
 
-    if (password.length < 3) {
-      Alert.alert("Error", "Password must be at least 3 characters");
+    if (password.length < MIN_PASSWORD_LENGTH) {
+      Alert.alert(
+        `Password must be at least ${MIN_PASSWORD_LENGTH} characters`,
+      );
+      return;
     }
 
     setIsLoading(true);
