@@ -137,7 +137,7 @@ export default function Onboarding() {
     } catch (error) {
       Alert.alert(
         "Error",
-        "Failed to compelte the onbarding. Please try again",
+        "Failed to complete the onboarding. Please try again",
       );
     } finally {
       setIsLoading(false);
