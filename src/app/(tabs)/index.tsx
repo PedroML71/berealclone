@@ -29,7 +29,7 @@ export default function Index() {
     if (status !== "granted") {
       Alert.alert(
         "Permission needed",
-        "We need camera roll permissions to select a profile image.",
+        "We need camera roll permissions to select a post image.",
       );
       return;
     }
@@ -54,7 +54,7 @@ export default function Index() {
     if (status !== "granted") {
       Alert.alert(
         "Permission needed",
-        "We need camera permissions to create a profile image.",
+        "We need camera permissions to create a post image.",
       );
       return;
     }
@@ -103,7 +103,18 @@ export default function Index() {
         <Text style={styles.fabText}>+</Text>
       </TouchableOpacity>
 
-      <Modal visible={showPreview} transparent animationType="fade">
+      <Modal
+        visible={showPreview}
+        transparent
+        animationType="fade"
+        onRequestClose={() => {
+          if (!isUploading) {
+            setShowPreview(false);
+            setPreviewImage(null);
+            setDescription("");
+          }
+        }}
+      >
         <View style={styles.modalContainer}>
           <View style={styles.modalContent}>
             <Text style={styles.modalTitle}>Preview Your Post</Text>
