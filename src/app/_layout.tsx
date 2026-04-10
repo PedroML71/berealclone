@@ -15,7 +15,6 @@ function RouteGuard() {
     if (isLoading) return;
     if (!user) {
       if (!inAuthGroup) {
-        console.log("its here");
         router.replace("/(auth)/login");
       }
     } else if (!user.onboarding_complete) {
