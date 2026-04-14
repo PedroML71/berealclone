@@ -41,7 +41,7 @@ export const uploadPostImage = async (userId: string, imageUri: string) => {
       .from("posts")
       .upload(fileName, bytes, {
         contentType: `image/${fileExtension}`,
-        upsert: true,
+        upsert: false,
       });
 
     if (error) {
