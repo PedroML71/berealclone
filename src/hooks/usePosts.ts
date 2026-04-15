@@ -27,30 +27,29 @@ export const usePosts = () => {
   const { user } = useAuth();
 
   useEffect(() => {
-    loadPosts();
-  }, []);
+    loadPosts().catch((error) => console.error("Failed to load posts:", error));
+  }, [user?.id]);
 
   const createPost = async (imageUri: string, description?: string) => {
     if (!user) {
       throw new Error("User not authenticated");
     }
 
-    // Deactivate any existing posts
-    const { error: deactivateError } = await supabase
-      .from("posts")
-      .update({ is_active: false })
-      .eq("user_id", user.id)
-      .eq("is_active", true);
-
-    if (deactivateError) {
-      console.error("Error deactivating old post: ", deactivateError);
-      throw deactivateError;
-    }
-
     try {
+      // needs to be called first because of supabase rules (only one active post per user)
+      const { error: deactivateError } = await supabase
+        .from("posts")
+        .update({ is_active: false })
+        .eq("user_id", user.id)
+        .eq("is_active", true);
+
+      if (deactivateError) {
+        console.error("Error deactivating old post: ", deactivateError);
+        throw deactivateError;
+      }
+
       const imageUrl = await uploadPostImage(user.id, imageUri);
 
-      // Calculate expiration time
       const now = new Date();
       const expiresAt = new Date(now.getTime() + 24 * 60 * 60 * 1000);
 
@@ -70,15 +69,15 @@ export const usePosts = () => {
           .single();
 
         if (error) {
-          console.log("Error creating post:", error);
+          console.error("Error creating post:", error);
           throw error;
+          // TODO: image cleanup in case of new post insert failure
         }
 
-        // Refresh posts
         await loadPosts();
       }
     } catch (error) {
-      console.log("Error in createPost:", error);
+      console.error("Error in createPost:", error);
       throw error;
     }
   };

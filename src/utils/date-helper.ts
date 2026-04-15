@@ -1,7 +1,9 @@
 const parseUTC = (timestamp: string) => {
   // Ensure timestamp is treated as UTC even if the Z suffix is missing
-  if (!timestamp.endsWith("Z") && !timestamp.includes("+")) {
-    return new Date(timestamp + "Z");
+  const hasTimezone = /(?:Z|[+-]\d{2}:\d{2})$/i.test(timestamp);
+
+  if (!hasTimezone) {
+    return new Date(`${timestamp}Z`);
   }
 
   return new Date(timestamp);
@@ -21,7 +23,7 @@ export const formatTimeAgo = (createdAt: string): string => {
   return `${Math.floor(hours / 24)}d ago`;
 };
 
-export const formatTimeRemaning = (expiresAt: string): string => {
+export const formatTimeRemaining = (expiresAt: string): string => {
   const now = new Date();
   const expires = parseUTC(expiresAt);
   const diff = expires.getTime() - now.getTime();

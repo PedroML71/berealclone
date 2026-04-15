@@ -1,6 +1,6 @@
 import { useAuth } from "@/context/AuthContext";
 import { Post, usePosts } from "@/hooks/usePosts";
-import { formatTimeAgo, formatTimeRemaning } from "@/utils/date-helper";
+import { formatTimeAgo, formatTimeRemaining } from "@/utils/date-helper";
 import { Image } from "expo-image";
 import * as ImagePicker from "expo-image-picker";
 import { useRouter } from "expo-router";
@@ -47,7 +47,11 @@ const PostCard = ({ post, currentUserId }: PostCardProps) => {
 
           <View>
             <Text style={styles.username}>
-              {isOwnPost ? "You" : `@${postUser?.username}`}
+              {isOwnPost
+                ? "You"
+                : postUser?.username
+                  ? `@${postUser.username}`
+                  : "Unknown user"}
             </Text>
             <Text style={styles.timeAgo}>{formatTimeAgo(post.created_at)}</Text>
           </View>
@@ -55,7 +59,7 @@ const PostCard = ({ post, currentUserId }: PostCardProps) => {
 
         <View style={styles.timeRemainingBadge}>
           <Text style={styles.timeRemainingText}>
-            {formatTimeRemaning(post.expires_at)}
+            {formatTimeRemaining(post.expires_at)}
           </Text>
         </View>
       </View>
@@ -71,8 +75,12 @@ const PostCard = ({ post, currentUserId }: PostCardProps) => {
           <Text style={styles.postDescription}>{post.description}</Text>
         )}
         <Text style={styles.postInfo}>
-          {isOwnPost ? "Your Post" : `${postUser?.name}' post`}· Expires in{" "}
-          {formatTimeRemaning(post.expires_at)}
+          {isOwnPost
+            ? "You"
+            : postUser?.username
+              ? `@${postUser.username}`
+              : "Unknown user"}
+          {formatTimeRemaining(post.expires_at)}
         </Text>
       </View>
     </View>
