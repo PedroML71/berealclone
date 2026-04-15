@@ -1,9 +1,34 @@
 import { useAuth } from "@/context/AuthContext";
 import { supabase } from "@/lib/supabase/client";
 import { uploadPostImage } from "@/lib/supabase/storage";
+import { useEffect, useState } from "react";
+
+export interface PostUser {
+  id: string;
+  name: string;
+  username: string;
+  profile_image_url?: string;
+}
+
+export interface Post {
+  id: string;
+  user_id: string;
+  image_url: string;
+  description?: string;
+  created_at: string;
+  expires_at: string;
+  is_active: boolean;
+  profiles?: PostUser;
+}
 
 export const usePosts = () => {
+  const [posts, setPosts] = useState<Post[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
   const { user } = useAuth();
+
+  useEffect(() => {
+    loadPosts().catch((error) => console.error("Failed to load posts:", error));
+  }, [user?.id]);
 
   const createPost = async (imageUri: string, description?: string) => {
     if (!user) {
@@ -11,9 +36,20 @@ export const usePosts = () => {
     }
 
     try {
+      // needs to be called first because of supabase rules (only one active post per user)
+      const { error: deactivateError } = await supabase
+        .from("posts")
+        .update({ is_active: false })
+        .eq("user_id", user.id)
+        .eq("is_active", true);
+
+      if (deactivateError) {
+        console.error("Error deactivating old post: ", deactivateError);
+        throw deactivateError;
+      }
+
       const imageUrl = await uploadPostImage(user.id, imageUri);
 
-      // Calculate expiration time
       const now = new Date();
       const expiresAt = new Date(now.getTime() + 24 * 60 * 60 * 1000);
 
@@ -33,15 +69,58 @@ export const usePosts = () => {
           .single();
 
         if (error) {
-          console.log("Error creating post:", error);
+          console.error("Error creating post:", error);
           throw error;
+          // TODO: image cleanup in case of new post insert failure
         }
+
+        await loadPosts();
       }
     } catch (error) {
-      console.log("Error in createPost:", error);
+      console.error("Error in createPost:", error);
       throw error;
     }
   };
 
-  return { createPost };
+  const loadPosts = async () => {
+    if (!user) return;
+
+    setIsLoading(true);
+    try {
+      const { data: postsData, error: postsError } = await supabase
+        .from("posts")
+        .select(`*, profiles(id, name, username, profile_image_url)`)
+        .eq("is_active", true)
+        .gt("expires_at", new Date().toISOString())
+        .order("created_at", { ascending: false });
+
+      if (postsError) {
+        console.error("Error loading posts:", postsError);
+        throw postsError;
+      }
+
+      if (!postsData || postsData.length === 0) {
+        setPosts([]);
+        return;
+      }
+
+      const postsWithProfiles = postsData.map((post) => ({
+        ...post,
+        profiles: post.profiles || null,
+      }));
+
+      setPosts(postsWithProfiles);
+    } catch (error) {
+      console.error("Error in loadPosts", error);
+      throw error;
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const refreshPosts = async () => {
+    await loadPosts();
+  };
+
+  return { createPost, posts, isLoading, refreshPosts };
 };
