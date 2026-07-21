@@ -36,6 +36,7 @@ const PostCard = ({ post, currentUserId }: PostCardProps) => {
             <Image
               source={{ uri: postUser.profile_image_url }}
               style={styles.avatar}
+              cachePolicy={"none"}
             />
           ) : (
             <View style={[styles.avatar, styles.avatarPlaceholder]}>
@@ -76,7 +77,7 @@ const PostCard = ({ post, currentUserId }: PostCardProps) => {
         )}
         <Text style={styles.postInfo}>
           {isOwnPost
-            ? "You"
+            ? "Your post - "
             : postUser?.username
               ? `@${postUser.username}`
               : "Unknown user"}

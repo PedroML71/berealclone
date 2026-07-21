@@ -23,7 +23,7 @@ export const uploadProfileImage = async (userId: string, imageUri: string) => {
       .from("profiles")
       .getPublicUrl(fileName);
 
-    return urlData.publicUrl;
+    return `${urlData.publicUrl}?t=${Date.now()}`;
   } catch (error) {
     console.log("Error uploading profile image:", error);
     throw error;
