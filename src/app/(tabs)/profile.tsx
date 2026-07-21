@@ -96,7 +96,7 @@ export default function Profile() {
                   style={[styles.profileImage, styles.profileImagePlaceholder]}
                 >
                   <Text style={styles.profileImageText}>
-                    {user?.name?.[0].toUpperCase() || "U"}
+                    {user?.name?.charAt(0).toUpperCase() || "U"}
                   </Text>
                 </View>
               )}
